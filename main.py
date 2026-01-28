@@ -34,25 +34,51 @@ def index():
     results.sort(key=lambda x: x["wait"])
     now_hk = datetime.now(HK_TZ).strftime("%H:%M")
 
-    # Header lines
-    lines = [
-        f"🕓 海怡半島海韻閣 即時巴士  更新時間：{now_hk}",
-        "───────────────────────────────",
-    ]
+    # Build readable HTML
+    html = """
+    <!DOCTYPE html>
+    <html lang="zh-Hant">
+    <head>
+        <meta charset="utf-8">
+        <title>海怡半島海韻閣 即時巴士</title>
+        <style>
+            body {
+                font-family: "Noto Sans TC", "PingFang TC", sans-serif;
+                white-space: pre-wrap;
+                background-color: #fafafa;
+                color: #222;
+                padding: 1.5em;
+                line-height: 1.6;
+                max-width: 500px;
+                margin: auto;
+            }
+            h2 {
+                text-align: center;
+            }
+            .bus {
+                border-bottom: 1px solid #ccc;
+                margin: 1em 0;
+                padding-bottom: 0.5em;
+            }
+            .bar {
+                color: #d22;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+    """
+    html += f"<h2>🕓 海怡半島海韻閣 即時巴士<br>更新時間：{now_hk}</h2><hr>"
 
-    # Add one clean block per bus
     for r in results:
         bar = "■" * min(max(r["wait"] // 2, 1), 15)
-        lines.append(
-            f"🚍 {r['bus']} → {r['dest']}\n"
-            f"　抵達：{r['eta']}　等待：約 {r['wait']} 分鐘\n"
-            f"　{bar}\n"
-        )
+        html += f"""
+        <div class="bus">
+            🚍 {r['bus']} → {r['dest']}<br>
+            　抵達：{r['eta']}　等待：約 {r['wait']} 分鐘<br>
+            　<span class="bar">{bar}</span>
+        </div>
+        """
 
-  
-
-    # Add blank lines between sections for readability
-    return "\n\n".join(lines)
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    html += "<hr><small>資料來源：Citybus — data.gov.hk</small></body></html>"
+    return html
