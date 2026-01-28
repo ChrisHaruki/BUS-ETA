@@ -1,6 +1,8 @@
+from flask import Flask
 import requests
 from datetime import datetime, timezone, timedelta
 
+app = Flask(__name__)
 HK_TZ = timezone(timedelta(hours=8))
 
 def getETA(stopId, bus):
@@ -8,19 +10,15 @@ def getETA(stopId, bus):
     r = requests.get(url)
     if r.status_code != 200:
         return None
-
     data = r.json().get("data", [])
     valid = [i for i in data if i.get("eta") and i.get("dir") == "O"]
     if not valid:
         return None
-
     valid.sort(key=lambda x: x["eta"])
     first = valid[0]
-
     eta_time = datetime.fromisoformat(first["eta"]).astimezone(HK_TZ)
     now_time = datetime.fromisoformat(first["data_timestamp"]).astimezone(HK_TZ)
     wait_min = int((eta_time - now_time).total_seconds() // 60)
-
     return {
         "bus": bus,
         "dest": first["dest_tc"],
@@ -28,32 +26,22 @@ def getETA(stopId, bus):
         "wait": wait_min,
     }
 
+@app.route("/")
+def index():
+    stop_id = "002263"
+    buses = ["595", "592", "99", "90B", "95C"]
+    results = [d for b in buses if (d := getETA(stop_id, b))]
+    results.sort(key=lambda x: x["wait"])
+    now_hk = datetime.now(HK_TZ).strftime("%H:%M")
+    lines = [
+        f"🕓 海怡半島海韻閣 即時巴士  更新時間：{now_hk}",
+        "───────────────────────────────",
+    ]
+    for r in results:
+        bar = "■" * min(max(r["wait"] // 2, 1), 15)
+        lines.append(f"\n🚍 {r['bus']} → {r['dest']}\n　抵達：{r['eta']}　約 {r['wait']} 分鐘\n　{bar}")
+    
+    return "\n".join(lines)
 
 if __name__ == "__main__":
-    stop_id = "002263"  # 海怡半島海韻閣, 海怡路
-    buses = ["595", "592", "99", "90B", "95C"]
-    results = []
-
-    for b in buses:
-        d = getETA(stop_id, b)
-        if d:
-            results.append(d)
-
-    # 依等待時間排序
-    results.sort(key=lambda x: x["wait"])
-
-    now_hk = datetime.now(HK_TZ).strftime("%H:%M")
-
-    
-    print("　海怡半島海韻閣 (002263) — 離開方向 即時巴士到站")
-    
-    print(f"　🕒 查詢時間：{now_hk}")
-    print("───────────────────────────────")
-
-    for r in results:
-        # 每 2 分鐘顯示一格 ■，最長 15 格
-        bar_len = min(max(r["wait"] // 2, 1), 15)
-        bar = "■" * bar_len
-        print(f"\n🚍 {r['bus']:<4} → {r['dest']}")
-        print(f"　抵達：{r['eta']}　等待：約 {r['wait']:>2} 分鐘")
-        print(f"　{bar}")
+    app.run(host="0.0.0.0", port=8080)
