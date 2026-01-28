@@ -1,3 +1,32 @@
+from flask import Flask
+import requests
+from datetime import datetime, timezone, timedelta
+
+app = Flask(__name__)
+HK_TZ = timezone(timedelta(hours=8))
+
+def getETA(stopId, bus):
+    """Fetch ETA data from Citybus open data."""
+    url = f"https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/{stopId}/{bus}"
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    data = r.json().get("data", [])
+    valid = [i for i in data if i.get("eta") and i.get("dir") == "O"]
+    if not valid:
+        return None
+    valid.sort(key=lambda x: x["eta"])
+    first = valid[0]
+    eta_time = datetime.fromisoformat(first["eta"]).astimezone(HK_TZ)
+    now_time = datetime.fromisoformat(first["data_timestamp"]).astimezone(HK_TZ)
+    wait_min = int((eta_time - now_time).total_seconds() // 60)
+    return {
+        "bus": bus,
+        "dest": first["dest_tc"],
+        "eta": eta_time.strftime("%H:%M"),
+        "wait": wait_min,
+    }
+
 @app.route("/")
 def index():
     stop_id = "002263"
@@ -6,7 +35,7 @@ def index():
     results.sort(key=lambda x: x["wait"])
     now_hk = datetime.now(HK_TZ).strftime("%H:%M")
 
-    # --- HTML with larger fonts and clean layout ---
+    # --- HTML with Auto-Refresh (30s) ---
     html = f"""
     <!DOCTYPE html>
     <html lang="zh-Hant">
@@ -14,6 +43,8 @@ def index():
         <meta charset="utf-8">
         <title>海怡半島海韻閣 即時巴士</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- 🔄 Auto-refresh every 30 seconds -->
+        <meta http-equiv="refresh" content="30">
         <style>
             body {{
                 font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
@@ -24,7 +55,7 @@ def index():
                 line-height: 1.8;
                 max-width: 720px;
                 margin: auto;
-                font-size: 1.25rem; /* larger base text */
+                font-size: 1.25rem;
             }}
             h2 {{
                 text-align: center;
