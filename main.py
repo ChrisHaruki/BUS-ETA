@@ -35,77 +35,73 @@ def index():
     results.sort(key=lambda x: x["wait"])
     now_hk = datetime.now(HK_TZ).strftime("%H:%M")
 
-    # --- HTML with Auto-Refresh (30s) ---
     html = f"""
     <!DOCTYPE html>
     <html lang="zh-Hant">
     <head>
         <meta charset="utf-8">
-        <title>海怡半島海韻閣 即時巴士</title>
+        <title>海韻閣 巴士時間</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- 🔄 Auto-refresh every 30 seconds -->
         <meta http-equiv="refresh" content="30">
         <style>
             body {{
                 font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-                background-color: #fafafa;
+                background: #fdfdfd;
                 color: #111;
-                margin: 0;
+                margin: 0 auto;
                 padding: 1.5em;
-                line-height: 1.8;
-                max-width: 720px;
-                margin: auto;
-                font-size: 1.25rem;
-            }}
-            h2 {{
+                max-width: 600px;
                 text-align: center;
-                font-size: 1.6rem;
-                margin-top: 0.2em;
-                margin-bottom: 0.6em;
+                line-height: 1.7;
             }}
-            hr {{
-                border: none;
-                border-top: 2px solid #999;
-                margin: 0.8em 0;
+            h1 {{
+                font-size: 1.6rem;
+                margin: 0.2em 0 0.3em 0;
+            }}
+            .time {{
+                font-size: 1rem;
+                color: #666;
+                margin-bottom: 1em;
             }}
             .bus {{
-                border-bottom: 1px solid #ccc;
-                margin: 1em 0;
-                padding-bottom: 0.6em;
+                border-bottom: 1px solid #ddd;
+                padding: 0.8em 0;
+            }}
+            .bus strong {{
+                font-size: 1.4rem;
+                color: #d62828;
             }}
             .bar {{
                 color: #d62828;
-                font-weight: bold;
                 letter-spacing: 1px;
-                font-size: 1.3rem;
+                font-weight: bold;
+                font-size: 1.2rem;
             }}
             small {{
                 display: block;
-                text-align: center;
-                color: #555;
+                color: #888;
                 margin-top: 1.2em;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }}
         </style>
     </head>
     <body>
-        <h2>🕓 海怡半島海韻閣 即時巴士<br>更新時間：{now_hk}</h2>
-        <hr>
+        <h1>海韻閣 巴士時間</h1>
+        <div class="time">更新 {now_hk}</div>
     """
 
     for r in results:
         bar = "■" * min(max(r["wait"] // 2, 1), 15)
         html += f"""
         <div class="bus">
-            🚍 <strong>{r['bus']}</strong> → {r['dest']}<br>
-            　抵達：<strong>{r['eta']}</strong>　等待：約 <strong>{r['wait']}</strong> 分鐘<br>
-            　<span class="bar">{bar}</span>
+            <div><strong>{r['bus']}</strong> → {r['dest']}</div>
+            <div>{r['eta']}　約 {r['wait']} 分</div>
+            <div class="bar">{bar}</div>
         </div>
         """
 
     html += """
-        <hr>
-        <small>資料來源：Citybus — data.gov.hk</small>
+        <small>data.gov.hk ‑ Citybus</small>
     </body>
     </html>
     """
