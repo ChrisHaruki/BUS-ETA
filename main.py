@@ -33,15 +33,26 @@ def index():
     results = [d for b in buses if (d := getETA(stop_id, b))]
     results.sort(key=lambda x: x["wait"])
     now_hk = datetime.now(HK_TZ).strftime("%H:%M")
+
+    # Header lines
     lines = [
-        f"🕓 海怡半島海韻閣 即時巴士  更新時間：{now_hk}\n",
-        "───────────────────────────────\n",
+        f"🕓 海怡半島海韻閣 即時巴士  更新時間：{now_hk}",
+        "───────────────────────────────",
     ]
+
+    # Add one clean block per bus
     for r in results:
         bar = "■" * min(max(r["wait"] // 2, 1), 15)
-        lines.append(f"\n🚍 {r['bus']} → {r['dest']}\n　抵達：{r['eta']}　約 {r['wait']} 分鐘\n　{bar}\n")
-    
-    return "\n".join(lines)
+        lines.append(
+            f"🚍 {r['bus']} → {r['dest']}\n"
+            f"　抵達：{r['eta']}　等待：約 {r['wait']} 分鐘\n"
+            f"　{bar}\n"
+        )
+
+  
+
+    # Add blank lines between sections for readability
+    return "\n\n".join(lines)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
