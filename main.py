@@ -70,8 +70,8 @@ def index():
         title = f"{stop_name} 巴士時間"
         update_text = "更新"
         no_data_text = "暫無巴士資料"
-        footer_line1 = "海怡家長專用，翻學睇邊架巴士最快到。"
-        footer_line2 = "巴士前往啓思和宣道會。"
+        footer_line1 = "海怡家長翻學專用，睇邊架車最快到。"
+        footer_line2 = "前往啓思和宣道會。"
         minutes_text = "分"
 
     html = f"""
