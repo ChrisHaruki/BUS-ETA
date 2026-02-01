@@ -14,6 +14,12 @@ BUS_STOPS = {
     "002170": "西邨站",
 }
 
+BUS_STOPS_EN = {
+    "002262": "Mei Fai Crt",
+    "002263": "Hoi Wan Crt",
+    "002170": "Lei Chak Hse",
+}
+
 def getETA(stopId, bus):
     """Fetch ETA data from Citybus open data."""
     url = f"https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/{stopId}/{bus}"
@@ -31,7 +37,7 @@ def getETA(stopId, bus):
     wait_min = int((eta_time - now_time).total_seconds() // 60)
     return {
         "bus": bus,
-        "dest": first["dest_tc"],
+        "dest": first.get("dest_en") if request.args.get("lang") == "en" else first["dest_tc"],
         "eta": eta_time.strftime("%H:%M"),
         "wait": wait_min,
     }
@@ -39,25 +45,42 @@ def getETA(stopId, bus):
 @app.route("/")
 def index():
     stop_id = request.args.get("stop", "002263")
+    lang = request.args.get("lang", "zh")
     
     if stop_id not in BUS_STOPS:
         stop_id = "002263"
     
-    stop_name = BUS_STOPS[stop_id]
+    stop_name = BUS_STOPS_EN[stop_id] if lang == "en" else BUS_STOPS[stop_id]
     
     results = [d for b in BUSES if (d := getETA(stop_id, b))]
     results.sort(key=lambda x: x["wait"])
     now_hk_dt = datetime.now(HK_TZ)
     now_hk = now_hk_dt.strftime("%H:%M")
-    day_of_week = now_hk_dt.strftime("%a")  # Mon, Tue, etc.
+    day_of_week = now_hk_dt.strftime("%a")
     date_str = now_hk_dt.strftime("%d/%m/%Y")
+    
+    # Translations
+    if lang == "en":
+        title = f"{stop_name} Bus Arrivals"
+        update_text = "Updated"
+        no_data_text = "No bus data available"
+        footer_line1 = "For South Horizons parents sending kids to school."
+        footer_line2 = "Buses to Creative & Christian Alliance Kindergartens."
+        minutes_text = "min"
+    else:
+        title = f"{stop_name} 巴士時間"
+        update_text = "更新"
+        no_data_text = "暫無巴士資料"
+        footer_line1 = "海怡家長專用，翻學睇邊架巴士最快到。"
+        footer_line2 = "巴士前往啓思和宣道會。"
+        minutes_text = "分"
 
     html = f"""
     <!DOCTYPE html>
-    <html lang="zh-Hant">
+    <html lang="{'en' if lang == 'en' else 'zh-Hant'}">
     <head>
         <meta charset="utf-8">
-        <title>{stop_name} 巴士時間</title>
+        <title>{title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="refresh" content="30">
         <style>
@@ -75,11 +98,33 @@ def index():
                 font-size: 1.6rem;
                 margin: 0.2em 0 0.3em 0;
             }}
+            .header-row {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1em;
+            }}
+            .lang-switch {{
+                font-size: 0.9rem;
+            }}
+            .lang-switch a {{
+                color: #666;
+                text-decoration: none;
+                padding: 0.3em 0.6em;
+                border-radius: 4px;
+                transition: all 0.2s;
+            }}
+            .lang-switch a:hover {{
+                background: #f0f0f0;
+            }}
+            .lang-switch a.active {{
+                color: #d62828;
+                font-weight: bold;
+            }}
             .time {{
                 font-size: 1rem;
                 color: #666;
-                margin-bottom: 1em;
-                text-align: center;
+                text-align: right;
             }}
             .stops {{
                 display: flex;
@@ -138,15 +183,24 @@ def index():
         </style>
     </head>
     <body>
-        <h1>{stop_name} 巴士時間</h1>
-        <div class="time">更新 {now_hk}, {day_of_week}, {date_str}</div>
+        <div class="header-row">
+            <div class="lang-switch">
+                <a href="?stop={stop_id}&lang=zh" class="{'active' if lang == 'zh' else ''}">中</a>
+                <span style="color: #ddd;">|</span>
+                <a href="?stop={stop_id}&lang=en" class="{'active' if lang == 'en' else ''}">EN</a>
+            </div>
+            <div class="time">{update_text} {now_hk} {day_of_week} {date_str}</div>
+        </div>
+        
+        <h1>{title}</h1>
         
         <div class="stops">
     """
     
-    for sid, name in BUS_STOPS.items():
+    stops_dict = BUS_STOPS_EN if lang == "en" else BUS_STOPS
+    for sid, name in stops_dict.items():
         active = "active" if sid == stop_id else ""
-        html += f'<a href="?stop={sid}" class="{active}">{name}</a>\n'
+        html += f'<a href="?stop={sid}&lang={lang}" class="{active}">{name}</a>\n'
     
     html += "</div>"
 
@@ -156,17 +210,17 @@ def index():
             html += f"""
         <div class="bus">
             <div><strong>{r['bus']}</strong> → {r['dest']}</div>
-            <div>{r['eta']}　約 {r['wait']} 分</div>
+            <div>{r['eta']}{'~'} {r['wait']} {minutes_text}</div>
             <div class="bar">{bar}</div>
         </div>
             """
     else:
-        html += '<div class="bus">暫無巴士資料</div>'
+        html += f'<div class="bus">{no_data_text}</div>'
 
-    html += """
+    html += f"""
         <div class="footer">
-            <p>海怡家長專用，翻學睇邊架巴士最快到。</p>
-            <p>巴士前往啓思和宣道會。</p>
+            <p>{footer_line1}</p>
+            <p>{footer_line2}</p>
             <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
         </div>
     </body>
