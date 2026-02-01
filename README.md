@@ -1,4 +1,4 @@
-# South Horizons Bus Tracker | 海怡半島巴士追蹤器
+# South Horizons School Bus Tracker | 海怡半島翻學巴士追蹤器
 
 A real-time bus arrival tracker for South Horizons parents rushing to send kids to Creative Kindergarten and Christian Alliance Kindergarten every hectic morning.
 
@@ -35,6 +35,7 @@ Check it before leaving home. Pick the right stop. Save 5-10 minutes. Get coffee
 
 # Clone the repo
 git clone https://github.com/yourusername/south-horizons-bus-tracker.git
+
 cd south-horizons-bus-tracker
 
 # Install dependencies
