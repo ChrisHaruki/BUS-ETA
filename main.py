@@ -15,9 +15,9 @@ BUS_STOPS = {
 }
 
 BUS_STOPS_EN = {
-    "002262": "Mei Fai Crt",
-    "002263": "Hoi Wan Crt",
-    "002170": "Lei Chak Hse",
+    "002262": "Main St Park",
+    "002263": "Harbour Heights",
+    "002170": "West Estate",
 }
 
 def getETA(stopId, bus):
@@ -64,8 +64,7 @@ def index():
         title = f"{stop_name} Bus Arrivals"
         update_text = "Updated"
         no_data_text = "No bus data available"
-        footer_line1 = "For South Horizons parents sending kids to school."
-        footer_line2 = "Buses to Creative & Christian Alliance Kindergartens."
+        footer_text = "For busy South Horizons parents sending kids to school."
         minutes_text = "min"
     else:
         title = f"{stop_name} 巴士時間"
@@ -94,17 +93,9 @@ def index():
                 text-align: center;
                 line-height: 1.7;
             }}
-            h1 {{
-                font-size: 1.6rem;
-                margin: 0.2em 0 0.3em 0;
-            }}
-            .header-row {{
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1em;
-            }}
             .lang-switch {{
+                text-align: right;
+                margin-bottom: 0.5em;
                 font-size: 0.9rem;
             }}
             .lang-switch a {{
@@ -121,9 +112,14 @@ def index():
                 color: #d62828;
                 font-weight: bold;
             }}
+            h1 {{
+                font-size: 1.6rem;
+                margin: 0.2em 0 0.3em 0;
+            }}
             .time {{
                 font-size: 1rem;
                 color: #666;
+                margin-bottom: 1em;
                 text-align: right;
             }}
             .stops {{
@@ -183,16 +179,14 @@ def index():
         </style>
     </head>
     <body>
-        <div class="header-row">
-            <div class="lang-switch">
-                <a href="?stop={stop_id}&lang=zh" class="{'active' if lang == 'zh' else ''}">中</a>
-                <span style="color: #ddd;">|</span>
-                <a href="?stop={stop_id}&lang=en" class="{'active' if lang == 'en' else ''}">EN</a>
-            </div>
-            <div class="time">{update_text} {now_hk} {day_of_week} {date_str}</div>
+        <div class="lang-switch">
+            <a href="?stop={stop_id}&lang=zh" class="{'active' if lang == 'zh' else ''}">中</a>
+            <span style="color: #ddd;">|</span>
+            <a href="?stop={stop_id}&lang=en" class="{'active' if lang == 'en' else ''}">EN</a>
         </div>
         
         <h1>{title}</h1>
+        <div class="time">{update_text} {now_hk} {day_of_week} {date_str}</div>
         
         <div class="stops">
     """
@@ -210,19 +204,30 @@ def index():
             html += f"""
         <div class="bus">
             <div><strong>{r['bus']}</strong> → {r['dest']}</div>
-            <div>{r['eta']}{'~'} {r['wait']} {minutes_text}</div>
+            <div>{r['eta']}　{'~' if lang == 'en' else '~'} {r['wait']} {minutes_text}</div>
             <div class="bar">{bar}</div>
         </div>
             """
     else:
         html += f'<div class="bus">{no_data_text}</div>'
 
-    html += f"""
+    if lang == "en":
+        html += f"""
+        <div class="footer">
+            <p>{footer_text}</p>
+            <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
+        </div>
+    """
+    else:
+        html += f"""
         <div class="footer">
             <p>{footer_line1}</p>
             <p>{footer_line2}</p>
             <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
         </div>
+    """
+
+    html += """
     </body>
     </html>
     """
