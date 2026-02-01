@@ -9,11 +9,9 @@ HK_TZ = timezone(timedelta(hours=8))
 BUSES = ["595", "592", "99", "90B", "95C"]
 
 BUS_STOPS = {
-    
-"002262": "大公園",
-"002263": "海韻閣",
-"002170": "西邨站",
-
+    "002262": "大公園",
+    "002263": "海韻閣",
+    "002170": "西邨站",
 }
 
 def getETA(stopId, bus):
@@ -49,7 +47,8 @@ def index():
     
     results = [d for b in BUSES if (d := getETA(stop_id, b))]
     results.sort(key=lambda x: x["wait"])
-    now_hk = datetime.now(HK_TZ).strftime("%H:%M")
+    now_hk_dt = datetime.now(HK_TZ)
+    now_hk = now_hk_dt.strftime("%H:%M")
     day_of_week = now_hk_dt.strftime("%a")  # Mon, Tue, etc.
     date_str = now_hk_dt.strftime("%d/%m/%Y")
 
@@ -120,9 +119,9 @@ def index():
                 font-size: 1.2rem;
             }}
             .footer {{
-                margin-top: none;
+                margin-top: 1.5em;
                 padding-top: 1em;
-                border-top: 1px solid #ddd;
+                border-top: none;
             }}
             .footer p {{
                 color: #666;
@@ -166,8 +165,8 @@ def index():
 
     html += """
         <div class="footer">
-            <p>前往啓思和宣道會學校</p>
-            <p>海怡家長翻學專用，睇邊架車最快到。</p>
+            <p>海怡家長專用，翻學睇邊架巴士最快到。</p>
+            <p>巴士前往啓思和宣道會。</p>
             <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
         </div>
     </body>
