@@ -166,8 +166,8 @@ def index():
 
     html += """
         <div class="footer">
-            <p>海怡家長專用，翻學睇邊架巴士最快到。</p>
-            <p>巴士前往啓思和宣道會。</p>
+            <p>前往啓思和宣道會學校</p>
+            <p>海怡家長翻學專用，睇邊架車最快到。</p>
             <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
         </div>
     </body>
