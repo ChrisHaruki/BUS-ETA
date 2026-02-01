@@ -1,9 +1,19 @@
-from flask import Flask
+from flask import Flask, request
 import requests
 from datetime import datetime, timezone, timedelta
 
 app = Flask(__name__)
 HK_TZ = timezone(timedelta(hours=8))
+
+# Define your bus stops - all share the same buses
+BUSES = ["595", "592", "99", "90B", "95C"]
+
+BUS_STOPS = {
+    "002169": "御庭園",
+    "002936": "大公園",
+    "002263": "海韻閣",
+    "002364": "海怡總站"
+}
 
 def getETA(stopId, bus):
     """Fetch ETA data from Citybus open data."""
@@ -29,9 +39,14 @@ def getETA(stopId, bus):
 
 @app.route("/")
 def index():
-    stop_id = "002263"
-    buses = ["595", "592", "99", "90B", "95C"]
-    results = [d for b in buses if (d := getETA(stop_id, b))]
+    stop_id = request.args.get("stop", "002263")
+    
+    if stop_id not in BUS_STOPS:
+        stop_id = "002263"
+    
+    stop_name = BUS_STOPS[stop_id]
+    
+    results = [d for b in BUSES if (d := getETA(stop_id, b))]
     results.sort(key=lambda x: x["wait"])
     now_hk = datetime.now(HK_TZ).strftime("%H:%M")
 
@@ -40,7 +55,7 @@ def index():
     <html lang="zh-Hant">
     <head>
         <meta charset="utf-8">
-        <title>海韻閣 巴士時間</title>
+        <title>{stop_name} 巴士時間</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="refresh" content="30">
         <style>
@@ -63,6 +78,29 @@ def index():
                 color: #666;
                 margin-bottom: 1em;
             }}
+            .stops {{
+                display: flex;
+                gap: 0.5em;
+                justify-content: center;
+                margin-bottom: 1.5em;
+                flex-wrap: wrap;
+            }}
+            .stops a {{
+                padding: 0.6em 1.2em;
+                background: #f0f0f0;
+                color: #333;
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 0.95rem;
+                transition: all 0.2s;
+            }}
+            .stops a:hover {{
+                background: #e0e0e0;
+            }}
+            .stops a.active {{
+                background: #d62828;
+                color: white;
+            }}
             .bus {{
                 border-bottom: 1px solid #ddd;
                 padding: 0.8em 0;
@@ -77,31 +115,57 @@ def index():
                 font-weight: bold;
                 font-size: 1.2rem;
             }}
-            small {{
+            .footer {{
+                margin-top: 1.5em;
+                padding-top: 1em;
+                border-top: 1px solid #ddd;
+            }}
+            .footer p {{
+                color: #666;
+                font-size: 0.9rem;
+                margin: 0.5em 0;
+                line-height: 1.6;
+            }}
+            .footer small {{
                 display: block;
                 color: #888;
-                margin-top: 1.2em;
                 font-size: 0.85rem;
+                margin-top: 0.5em;
             }}
         </style>
     </head>
     <body>
-        <h1>海韻閣 巴士時間</h1>
+        <h1>{stop_name} 巴士時間</h1>
         <div class="time">更新 {now_hk}</div>
+        
+        <div class="stops">
     """
+    
+    for sid, name in BUS_STOPS.items():
+        active = "active" if sid == stop_id else ""
+        html += f'<a href="?stop={sid}" class="{active}">{name}</a>\n'
+    
+    html += "</div>"
 
-    for r in results:
-        bar = "■" * min(max(r["wait"] // 2, 1), 15)
-        html += f"""
+    if results:
+        for r in results:
+            bar = "■" * min(max(r["wait"] // 2, 1), 15)
+            html += f"""
         <div class="bus">
             <div><strong>{r['bus']}</strong> → {r['dest']}</div>
             <div>{r['eta']}　約 {r['wait']} 分</div>
             <div class="bar">{bar}</div>
         </div>
-        """
+            """
+    else:
+        html += '<div class="bus">暫無巴士資料</div>'
 
     html += """
-        <small>data.gov.hk ‑ Citybus</small>
+        <div class="footer">
+            <p>為海怡家長而設，朝早翻學一眼睇到邊架巴士最快到。</p>
+            <p>巴士前往啓思和宣道會。</p>
+            <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
+        </div>
     </body>
     </html>
     """
