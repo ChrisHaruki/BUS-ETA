@@ -15,9 +15,9 @@ BUS_STOPS = {
 }
 
 BUS_STOPS_EN = {
-    "002262": "Main St Park",
-    "002263": "Harbour Heights",
-    "002170": "West Estate",
+    "002262": "Mei Fai Crt",
+    "002263": "Hoi Wan Crt",
+    "002170": "Lei Chak Hse",
 }
 
 def getETA(stopId, bus):
@@ -61,7 +61,7 @@ def index():
     
     # Translations
     if lang == "en":
-        title = f"{stop_name} Bus Arrivals"
+        title = f"Bus Arrivals"
         update_text = "Updated"
         no_data_text = "No bus data available"
         footer_text = "For busy South Horizons parents sending kids to school."
