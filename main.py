@@ -50,6 +50,8 @@ def index():
     results = [d for b in BUSES if (d := getETA(stop_id, b))]
     results.sort(key=lambda x: x["wait"])
     now_hk = datetime.now(HK_TZ).strftime("%H:%M")
+    day_of_week = now_hk_dt.strftime("%a")  # Mon, Tue, etc.
+    date_str = now_hk_dt.strftime("%d/%m/%Y")
 
     html = f"""
     <!DOCTYPE html>
@@ -78,6 +80,7 @@ def index():
                 font-size: 1rem;
                 color: #666;
                 margin-bottom: 1em;
+                text-align: right;
             }}
             .stops {{
                 display: flex;
@@ -117,7 +120,7 @@ def index():
                 font-size: 1.2rem;
             }}
             .footer {{
-                margin-top: 1.5em;
+                margin-top: none;
                 padding-top: 1em;
                 border-top: 1px solid #ddd;
             }}
@@ -137,7 +140,7 @@ def index():
     </head>
     <body>
         <h1>{stop_name} 巴士時間</h1>
-        <div class="time">更新 {now_hk}</div>
+        <div class="time">更新 {now_hk} {day_of_week} {date_str}</div>
         
         <div class="stops">
     """
