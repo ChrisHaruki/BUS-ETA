@@ -9,10 +9,11 @@ HK_TZ = timezone(timedelta(hours=8))
 BUSES = ["595", "592", "99", "90B", "95C"]
 
 BUS_STOPS = {
-    "002169": "御庭園",
-    "002936": "大公園",
-    "002263": "海韻閣",
-    "002364": "海怡總站"
+    
+"002262": "大公園",
+"002263": "海韻閣",
+"002170": "西邨站",
+
 }
 
 def getETA(stopId, bus):
@@ -162,7 +163,7 @@ def index():
 
     html += """
         <div class="footer">
-            <p>為海怡家長而設，朝早翻學一眼睇到邊架巴士最快到。</p>
+            <p>為海怡家長而設，朝早翻學睇邊架巴士最快到。</p>
             <p>巴士前往啓思和宣道會。</p>
             <small>data.gov.hk ‑ Citybus<br>Haruki Robotics Lab</small>
         </div>
