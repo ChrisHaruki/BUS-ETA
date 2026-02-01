@@ -79,7 +79,7 @@ def index():
                 font-size: 1rem;
                 color: #666;
                 margin-bottom: 1em;
-                text-align: right;
+                text-align: center;
             }}
             .stops {{
                 display: flex;
@@ -139,7 +139,7 @@ def index():
     </head>
     <body>
         <h1>{stop_name} 巴士時間</h1>
-        <div class="time">更新 {now_hk} {day_of_week} {date_str}</div>
+        <div class="time">更新 {now_hk}, {day_of_week}, {date_str}</div>
         
         <div class="stops">
     """
