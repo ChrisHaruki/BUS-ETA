@@ -57,7 +57,7 @@ def index():
     now_hk_dt = datetime.now(HK_TZ)
     now_hk = now_hk_dt.strftime("%H:%M")
     day_of_week = now_hk_dt.strftime("%a")
-    date_str = now_hk_dt.strftime("%d/%m/%Y")
+    date_str = now_hk_dt.strftime("%d/%m")
     
     # Translations
     if lang == "en":
