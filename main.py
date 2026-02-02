@@ -121,13 +121,11 @@ def index():
             color: #666;
             margin-bottom: 1em;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: space-between;            
+            text-align: right;
             }}    
             
-            .time-right {{
-                text-align: right;
-            }}
+           
             .stops {{
                 display: flex;
                 gap: 0.5em;
@@ -192,9 +190,9 @@ def index():
         </div>
         
         <h1>{title}</h1>
-            <div class="time">                
-                <span class="time-right">{now_hk} {day_of_week} {date_str}</span>
-            </div>
+        <div class="time">                
+                {now_hk} {day_of_week} {date_str}
+        </div>
         
         <div class="stops">
     """
