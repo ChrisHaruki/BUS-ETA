@@ -116,14 +116,15 @@ def index():
                 font-size: 1.6rem;
                 margin: 0.2em 0 0.3em 0;
             }}
-           .time {{
+          .time {{
             font-size: 1rem;
             color: #666;
             margin-bottom: 1em;
-            display: flex;
-            justify-content: space-between;            
-            text-align: right;
-            }}    
+            text-align: right;  /* Keep this */
+            /* Remove these lines: */
+            /* display: flex; */
+            /* justify-content: space-between; */
+            }}
             
            
             .stops {{
