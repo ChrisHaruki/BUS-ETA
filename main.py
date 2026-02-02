@@ -116,12 +116,22 @@ def index():
                 font-size: 1.6rem;
                 margin: 0.2em 0 0.3em 0;
             }}
-            .time {{
-                font-size: 1rem;
-                color: #666;
-                margin-bottom: 1em;
+           .time {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            }
+
+            .time-left {
+                text-align: left;
+            }
+            
+            .time-right {
                 text-align: right;
-            }}
+            }
             .stops {{
                 display: flex;
                 gap: 0.5em;
@@ -186,7 +196,10 @@ def index():
         </div>
         
         <h1>{title}</h1>
-        <div class="time">{update_text} {now_hk} {day_of_week} {date_str}</div>
+            <div class="time">
+                <span class="time-left">{update_text}</span>
+                <span class="time-right">{now_hk} {day_of_week} {date_str}</span>
+            </div>
         
         <div class="stops">
     """
