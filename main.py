@@ -116,22 +116,22 @@ def index():
                 font-size: 1.6rem;
                 margin: 0.2em 0 0.3em 0;
             }}
-           .time {
+           .time {{
             font-size: 1rem;
             color: #666;
             margin-bottom: 1em;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            }
+            }}
 
-            .time-left {
+            .time-left {{
                 text-align: left;
-            }
+            }}
             
-            .time-right {
+            .time-right {{
                 text-align: right;
-            }
+            }}
             .stops {{
                 display: flex;
                 gap: 0.5em;
