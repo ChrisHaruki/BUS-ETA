@@ -123,11 +123,7 @@ def index():
             display: flex;
             justify-content: space-between;
             align-items: center;
-            }}
-
-            .time-left {{
-                text-align: left;
-            }}
+            }}    
             
             .time-right {{
                 text-align: right;
@@ -196,8 +192,7 @@ def index():
         </div>
         
         <h1>{title}</h1>
-            <div class="time">
-                <span class="time-left">{update_text}</span>
+            <div class="time">                
                 <span class="time-right">{now_hk} {day_of_week} {date_str}</span>
             </div>
         
