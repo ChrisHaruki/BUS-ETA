@@ -5,7 +5,6 @@ from datetime import datetime, timezone, timedelta
 app = Flask(__name__)
 HK_TZ = timezone(timedelta(hours=8))
 
-# Define your bus stops - all share the same buses
 BUSES = ["595", "592", "99", "90B", "95C"]
 
 BUS_STOPS = {
