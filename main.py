@@ -1,6 +1,9 @@
 from flask import Flask, request
 import requests
 from datetime import datetime, timezone, timedelta
+import threading
+import time
+import os
 
 app = Flask(__name__)
 HK_TZ = timezone(timedelta(hours=8))
@@ -18,6 +21,65 @@ BUS_STOPS_EN = {
     "002263": "Hoi Wan Crt",
     "002170": "Lei Chak Hse",
 }
+
+# ========== KEEP-ALIVE FUNCTION (SCHOOL HOURS ONLY) ==========
+def keep_alive_ping():
+    """
+    Pings the app every 10 minutes ONLY during school hours:
+    Monday-Friday, 7:00 AM - 10:00 AM HK time
+    """
+    app_url = "https://south-horizons-bus-eta.onrender.com"
+    
+    # Wait 2 minutes before first ping (let app fully start)
+    time.sleep(120)
+    
+    print(f"[Keep-Alive] Thread started. Will ping during Mon-Fri 7-10 AM HK time.")
+    
+    while True:
+        now = datetime.now(HK_TZ)
+        hour = now.hour
+        weekday = now.weekday()  # 0=Monday, 1=Tuesday, ..., 6=Sunday
+        
+        # Check if it's a weekday (Mon-Fri) and within school hours (7 AM - 10 AM)
+        is_weekday = weekday < 5  # 0-4 = Monday to Friday
+        is_school_hours = 7 <= hour < 10  # 7:00-9:59 AM
+        
+        if is_weekday and is_school_hours:
+            # ACTIVE MODE: Ping every 10 minutes during school hours
+            try:
+                print(f"[Keep-Alive] 🟢 ACTIVE - Pinging at {now.strftime('%A %H:%M:%S')}")
+                response = requests.get(app_url, timeout=30)
+                print(f"[Keep-Alive] ✅ Response: {response.status_code}")
+            except Exception as e:
+                print(f"[Keep-Alive] ❌ Ping failed: {e}")
+            
+            # Wait 10 minutes before next ping
+            time.sleep(600)
+        
+        else:
+            # SLEEP MODE: App can sleep outside school hours
+            if weekday >= 5:
+                day_name = "weekend"
+                next_check = "Monday 7 AM"
+            else:
+                day_name = "weekday"
+                if hour < 7:
+                    next_check = "7 AM today"
+                else:
+                    next_check = "7 AM tomorrow"
+            
+            print(f"[Keep-Alive] 🔴 SLEEP MODE - {now.strftime('%A %H:%M')} ({day_name}, outside 7-10 AM)")
+            print(f"[Keep-Alive] App may sleep. Next active period: {next_check}")
+            
+            # Check again in 30 minutes (to catch the start of school hours)
+            time.sleep(1800)
+
+# ========== START KEEP-ALIVE THREAD ==========
+keep_alive_thread = threading.Thread(target=keep_alive_ping, daemon=True)
+keep_alive_thread.start()
+print("[Keep-Alive] Background ping thread started (Mon-Fri 7-10 AM only)")
+
+# ========== YOUR EXISTING CODE ==========
 
 def getETA(stopId, bus):
     """Fetch ETA data from Citybus open data."""
@@ -119,10 +181,7 @@ def index():
             font-size: 1rem;
             color: #666;
             margin-bottom: 1em;
-            text-align: right;  /* Keep this */
-            /* Remove these lines: */
-            /* display: flex; */
-            /* justify-content: space-between; */
+            text-align: right;
             }}
             
            
@@ -239,3 +298,18 @@ def index():
     """
 
     return html
+
+# ========== HEALTH CHECK ENDPOINT ==========
+@app.route("/ping")
+def ping():
+    """Simple endpoint for keep-alive pings"""
+    now = datetime.now(HK_TZ)
+    return {
+        "status": "alive",
+        "time": now.isoformat(),
+        "hk_time": now.strftime("%A %H:%M:%S"),
+        "is_school_hours": now.weekday() < 5 and 7 <= now.hour < 10
+    }
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
